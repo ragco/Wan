@@ -1,0 +1,27 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+
+documents = [
+    "Natural Language Processing is a part of Artificial Intelligence",
+    "Artificial Intelligence and Machine Learning are changing the world",
+    "Natural Language is important for communication with machines"
+]
+
+vectorizer = TfidfVectorizer()
+
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+feature_names = vectorizer.get_feature_names_out()
+
+df = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)
+
+print("\nTF-IDF Representation:\n")
+print(df)
+
+df.to_csv("tfidf_output.csv", index=False)
+
+for i in range(len(documents)):
+    print(f"\nTop terms in Document {i}:")
+    doc_series = df.iloc[i]
+    top_terms = doc_series[doc_series > 0].sort_values(ascending=False).head(5)
+    print(top_terms)

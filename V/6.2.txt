@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix
+
+df = pd.read_csv("Iris.csv")
+
+df
+
+X = df.drop('Species', axis=1)
+y = df['Species']
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+labels = model.classes_
+
+cm = confusion_matrix(y_test, y_pred, labels=labels)
+print("Confusion Matrix:\n", cm)
+
+def compute_metrics(cm, class_index):
+    TP = cm[class_index][class_index]
+    FP = cm[:, class_index].sum() - TP
+    FN = cm[class_index].sum() - TP
+    TN = cm.sum() - (TP + FP + FN)
+    
+    accuracy = (TP + TN) / cm.sum()
+    error_rate = 1 - accuracy
+    precision = TP / (TP + FP) if (TP + FP) != 0 else 0
+    recall = TP / (TP + FN) if (TP + FN) != 0 else 0
+    
+    return {
+        "TP": TP, "FP": FP, "TN": TN, "FN": FN,
+        "Accuracy": round(accuracy, 3),
+        "Error Rate": round(error_rate, 3),
+        "Precision": round(precision, 3),
+        "Recall": round(recall, 3)
+    }
+
+for idx, label in enumerate(labels):
+    print(f"\nMetrics for class: {label}")
+    metrics = compute_metrics(cm, idx)
+    for key, value in metrics.items():
+        print(f"{key}: {value}")

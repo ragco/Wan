@@ -1,0 +1,32 @@
+import pandas as pd
+
+iris = pd.read_csv('Iris.csv') 
+
+iris
+
+print("First 5 rows of the dataset:")
+print(iris.head())
+
+print("\nColumn Names:")
+print(iris.columns)
+
+print("\nSpecies in the dataset:")
+print(iris['Species'].unique())
+
+setosa = iris[iris['Species'] == 'Iris-setosa']
+versicolor = iris[iris['Species'] == 'Iris-versicolor']
+virginica = iris[iris['Species'] == 'Iris-virginica']
+
+def show_stats(data, name):
+    print(f"\n--- {name.upper()} ---")
+    print("Mean values:\n", data.mean(numeric_only=True))
+    print("Standard Deviation:\n", data.std(numeric_only=True))
+    print("Minimum values:\n", data.min(numeric_only=True))
+    print("Maximum values:\n", data.max(numeric_only=True))
+    print("25% Percentile:\n", data.quantile(0.25, numeric_only=True))
+    print("50% Percentile (Median):\n", data.quantile(0.50, numeric_only=True))
+    print("75% Percentile:\n", data.quantile(0.75, numeric_only=True))
+
+show_stats(setosa, "Setosa")
+show_stats(versicolor, "Versicolor")
+show_stats(virginica, "Virginica")

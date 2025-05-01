@@ -1,0 +1,64 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("Iris.csv")
+df
+
+
+df.isnull().sum()
+
+df.dtypes
+
+
+df.shape
+
+df.info
+
+df.drop(columns=["Id"], inplace=True, errors='ignore')
+
+
+np.mean(df['sepal_length'])
+
+np.mean(df['sepal_width'])
+
+np.mean(df['petal_length'])
+
+np.mean(df['petal_width'])
+
+np.std(df['sepal_length'])
+
+np.std(df['sepal_width'])
+
+np.std(df['petal_length'])
+
+np.std(df['petal_width'])
+
+np.min(df['sepal_length'])
+
+np.min(df['sepal_width'])
+
+np.min(df['petal_length'])
+
+np.min(df['petal_width'])
+
+np.max(df['sepal_length'])
+
+np.max(df['sepal_width'])
+
+np.max(df['petal_length'])
+
+np.max(df['petal_width'])
+
+df.quantile(0.25, numeric_only=True)
+
+df.quantile(0.50, numeric_only=True)
+
+df.quantile(0.75, numeric_only=True)
+
+
+
+
+
+
+

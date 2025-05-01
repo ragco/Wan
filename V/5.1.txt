@@ -1,0 +1,58 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv('Social_Network_Ads.csv')
+
+df
+
+df.shape
+
+df.columns
+
+df.dtypes
+
+df.info()
+
+df.describe()
+
+x = df.iloc[:,[2,3]].values
+
+x
+
+y = df.iloc[:,4].values
+
+y
+
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.25, random_state = 0)
+
+x_train
+
+x_test.shape
+
+y_test
+
+y_test.shape
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
+
+x_train
+
+from sklearn.linear_model import LogisticRegression
+log_reg = LogisticRegression(random_state = 0)
+log_reg.fit(x_train, y_train)
+
+y_pred = log_reg.predict(x_test)
+
+y_pred
+
+y_test
+
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(y_test,y_pred) * 100
+accuracy
+

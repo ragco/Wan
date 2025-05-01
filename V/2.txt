@@ -1,0 +1,47 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("Academic performance.csv")
+
+df.columns
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+df.fillna(df.mean(), inplace=True)
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+numeric_cols = df.select_dtypes(include=[np.number]).columns
+df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
+
+print("\nAfter handling missing values:")
+print(df.isnull().sum())
+
+print(df.head())
+
+print("\nInconsistencies in 'Reading_Score' column:")
+print(df['Reading_Score'].value_counts())
+
+missing_value_formats = ["n.a.","?","NA","n/a", "na", "--"]
+df = pd.read_csv("Academic performance.csv", na_values = missing_value_formats)
+
+print(df['Reading_Score'].head(10))
+
+print(df['Reading_Score'].isnull().head(10))
+
+print(df.isnull().values.any())
+
+df.dropna(axis=0,inplace=True)
+
+new_df = df.dropna(axis = 0, how ='any')
+
+df['Writing_Score'] = df['Writing_Score'].fillna(0)
+
+print(df['Writing_Score'].head(10))
+
+df.head()
+
+plt.boxplot(x=df['Writing_Score'])

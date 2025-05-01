@@ -1,0 +1,68 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sn
+
+df = pd.read_csv('Iris.csv')
+
+df
+
+df.shape
+
+df.describe()
+
+df.columns
+
+df.dtypes
+
+df.info()
+
+df.isnull()
+
+df.corr(numeric_only=True)
+
+X = df.iloc[:,:4].values
+X
+
+y = df.iloc[:, 4].values
+y
+
+y = df['Species'].values
+y
+
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+
+y = le.fit_transform(y)
+y
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+
+X_train
+
+X_train.shape
+
+X_test
+
+X_test.shape
+
+y_train
+
+y_train.shape
+
+y_test
+
+y_test.shape
+
+from sklearn.naive_bayes import GaussianNB
+model = GaussianNB()
+model.fit(X_train,y_train)
+
+prediction = model.predict(X_test)
+
+prediction
+
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(y_test,prediction) * 100
+accuracy

@@ -1,0 +1,35 @@
+import pandas as pd
+import numpy as np
+from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+
+df=pd.read_csv("boston_housing.csv")
+
+df.shape
+
+df.describe()
+
+df.head()
+
+df_x=df
+print(df_x)
+
+df_y=df.price
+print(df_y)
+
+reg =linear_model.LinearRegression()
+
+x_train, x_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.33, random_state=42)
+
+reg.fit(x_train, y_train)
+
+print(reg.coef_)
+
+y_pred = reg.predict(x_test)
+print(y_pred)
+
+y_pred[0]
+
+y_test[0]
+
+print(np.mean((y_pred-y_test)**2))

@@ -1,0 +1,36 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import warnings
+warnings.filterwarnings('ignore')
+
+data = pd.read_csv("titanic_train.csv")
+
+import seaborn as sns
+
+sns.distplot(data['Fare'])
+
+sns.distplot(data['Pclass'])
+
+sns.distplot(data['Fare'], bins=40)
+
+sns.distplot(data['Fare'], kde=False)
+
+sns.distplot(data['Fare'], bins=20, kde=False, rug=True)
+
+sns.jointplot(x = data['Age'], y=data['Fare'], kind = 'scatter')
+
+sns.jointplot(x = data['Age'], y = data['Fare'], kind = 'hex')
+
+sns.pairplot(data)
+
+sns.rugplot(data['Fare'])
+
+plt.figure(figsize=(10, 6))
+sns.histplot(data['Fare'], kde=True, bins=30, color='blue')
+plt.title('Distribution of Ticket Fare')
+plt.xlabel('Fare')
+plt.ylabel('Frequency')
+plt.show() 

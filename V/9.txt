@@ -1,0 +1,59 @@
+import numpy as np 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+from seaborn import load_dataset
+
+data = pd.read_csv("titanic_train.csv")
+
+data
+
+data.shape
+
+data.columns
+
+data.dtypes
+
+data.info()
+
+data.isnull()
+
+data.isnull().sum()
+
+data.describe()
+
+sns.countplot(data['Survived'])
+
+sns.countplot(data['Sex'])
+
+data['Sex'].value_counts().plot(kind="pie", autopct="%.2f")
+plt.show()
+
+data['Survived'].value_counts().plot(kind="pie", autopct="%.2f")
+plt.show()
+
+plt.hist(data['Age'], bins=5) 
+plt.show()
+
+sns.barplot(x='Sex', y='Survived', data=data)
+
+sns.distplot(data['Age'])  
+plt.show()
+
+sns.boxplot(x='Sex', y='Age', data=data)
+plt.title("Age Distribution by Sex")
+plt.show()
+
+sns.boxplot(x='Sex', y='Age', hue='Survived', data=data)
+plt.title("Age distribution by Sex and Survival")
+plt.show()
+
+sns.distplot(data[data['Survived'] == 0]['Age'], hist=False, color="blue")
+sns.distplot(data[data['Survived'] == 1]['Age'], hist=False, color="orange") 
+plt.show()
+
+pd.crosstab(data['Pclass'], data['Survived'])
+
+sns.heatmap(pd.crosstab(data['Pclass'], data['Survived']))
+
+sns.clustermap(pd.crosstab(data['Age'],data['Survived']))
