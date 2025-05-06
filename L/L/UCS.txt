@@ -1,0 +1,72 @@
+# Importing the heapq module for priority queue functionality
+import heapq
+
+# Function for Uniform Cost Search algorithm
+def uniform_cost_search(graph, start, goal):
+    # Create a priority queue to store vertices to visit
+    queue = [(0, start, [start])]  # (cost, vertex, path)
+    visited = set()  # Set to store visited vertices
+
+    # Continue the search until the priority queue is not empty
+    while queue:
+        # Pop the vertex with the lowest cost from the priority queue
+        cost, vertex, path = heapq.heappop(queue)
+
+        # If the popped vertex is the goal, return the path and its cost
+        if vertex == goal:
+            return path, cost
+
+        # If the vertex is not visited, mark it as visited
+        if vertex not in visited:
+            visited.add(vertex)
+
+            # Expand the current vertex by considering its neighbors
+            for neighbor, edge_cost in graph[vertex]:
+                # If the neighbor is not visited, calculate the new cost and path
+                if neighbor not in visited:
+                    new_cost = cost + edge_cost
+                    new_path = path + [neighbor]
+                    # Push the neighbor into the priority queue with its new cost and path
+                    heapq.heappush(queue, (new_cost, neighbor, new_path))
+
+    # If the goal vertex is not reachable from the start vertex, return None
+    return None
+
+# Accept graph from the user
+graph = {}
+
+# Input the number of edges from the user
+num_edges = int(input("Enter the number of edges: "))
+
+# Iterate over each edge to input its details
+for i in range(num_edges):
+    print("\nFor Edge", i + 1)
+    # Input start vertex, end vertex, and edge cost from the user
+    src = input("Enter start vertex: ")
+    dest = input("Enter end vertex: ")
+    cost = float(input("Enter edge cost: "))
+
+    # Add vertices to the graph if they don't exist
+    if src not in graph:
+        graph[src] = []
+    if dest not in graph:
+        graph[dest] = []
+
+    # Add the destination vertex and its cost to the adjacency list of the source vertex
+    graph[src].append((dest, cost))
+    # Add the source vertex and its cost to the adjacency list of the destination vertex
+    graph[dest].append((src, cost))
+
+# Input the start and goal vertices from the user
+start_vertex = input("Enter the start vertex: ")
+goal_vertex = input("Enter the goal vertex: ")
+
+# Find the shortest path and its cost from the start to the goal using Uniform Cost Search
+shortest_path, shortest_cost = uniform_cost_search(graph, start_vertex, goal_vertex)
+
+# Print the result
+if shortest_path is not None:
+    print(f"The shortest path from {start_vertex} to {goal_vertex} is: {shortest_path}")
+    print(f"The shortest path cost is: {shortest_cost}")
+else:
+    print(f"There is no path from {start_vertex} to {goal_vertex}")

@@ -1,0 +1,76 @@
+N = 8 #8-Queen problem ,8 x 8 chessboard
+
+def printSolution(board): # defines a function named printSolution that takes a board as input and prints it.
+    #The board is a 2D list representing the chessboard configuration
+    for i in range(N): # loop iterates over rows of board
+        for j in range(N): # loop iterates over columns of board
+            print(board[i][j], end=" ")#prints the value of the cell at row i and column j of the board 
+        print()
+
+        
+# This checks if placing a queen at position (row, col) would result in an attack by another queen.
+#It checks three conditions: whether the diagonal with positive slope,
+                            #the diagonal with negative slope, 
+                            #or the row itself already has a queen.
+
+def isSafe(row, col, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+    if slashCodeLookup[slashCode[row][col]] or backslashCodeLookup[backslashCode[row][col]] or rowLookup[row]:
+        return False #If any of the above conditions are met, indicating that it's not safe to place a queen 
+    return True # If none of the conditions are met, indicating that it's safe to place a queen at position 
+
+
+# This defines a recursive utility function named solveNQueensUtil to solve the N-Queens problem
+
+def solveNQueensUtil(board, col, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+#This condition checks if all columns have been processed. 
+#If col is greater than or equal to N, it means all queens have been successfully placed, so the function returns True
+    if col >= N:
+        return True
+    for i in range(N):#iterates over each row
+        if isSafe(i, col, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+        #This checks if it's safe to place a queen at position (i, col) using the isSafe function.
+            board[i][col] = 1 #if safe to place then mark tit as 1
+            rowLookup[i] = True #it marks row i ,occupied by queen
+            slashCodeLookup[slashCode[i][col]] = True #mark positive slope diagonal with queen
+            backslashCodeLookup[backslashCode[i][col]] = True # mark negative slope diagonal with queen
+            if solveNQueensUtil(board, col + 1, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+                return True #indicate true when all queens are placed
+            board[i][col] = 0 # If placing a queen at position (i, col) does not lead to a solution, it resets the board at that position.
+            rowLookup[i] = False # It marks the row i as not occupied by a queen.
+            slashCodeLookup[slashCode[i][col]] = False
+            backslashCodeLookup[backslashCode[i][col]] = False
+    return False #If no queen can be placed in the current column (col), the function returns False, indicating that this path does not lead to a solution
+
+def solveNQueens():
+    # It initializes the chessboard with all cells set to 0, indicating that no queen is placed on the board yet.
+    board = [[0 for _ in range(N)] for _ in range(N)]
+    # It initializes the slash code matrix, which represents the diagonal with positive slope.
+    slashCode = [[0 for _ in range(N)] for _ in range(N)]
+    # It initializes the backslash code matrix, which represents the diagonal with negative slope.
+    backslashCode = [[0 for _ in range(N)] for _ in range(N)]
+    #It initializes a list to keep track of whether each row is occupied by a queen.
+    rowLookup = [False] * N
+    # It calculates the size of the slash code and backslash code arrays.
+    x = 2 * N - 1
+    # It initializes a list to keep track of whether each slash code is occupied by a queen.
+    slashCodeLookup = [False] * x
+    #It initializes a list to keep track of whether each backslash code is occupied by a queen.
+    backslashCodeLookup = [False] * x
+
+    for rr in range(N):
+        for cc in range(N):
+            #calculate the values for slash codes and backslash codes for each cell on the board
+            slashCode[rr][cc] = rr + cc
+            backslashCode[rr][cc] = rr - cc + (N - 1)
+
+    # It calls the solveNQueensUtil function to solve the N-Queens problem. If it returns False, it means no solution exists, and it prints "Solution does not exist".
+    if not solveNQueensUtil(board, 0, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+        print("Solution does not exist")
+        return False
+
+    #If a solution exists, it prints the solution by calling the printSolution function.
+    printSolution(board)
+    return True
+
+# This line invokes the main function to solve the N-Queens problem.
+solveNQueens()

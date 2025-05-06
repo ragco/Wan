@@ -1,0 +1,91 @@
+from collections import deque
+#data structure similar to lists but with optimized operations for adding and removing elements from both ends.
+
+def bfs(graph, start):#representing graph to traverse,
+    #representing the starting node for the traversal.
+    
+    #visited to keep track of visited nodes during traversal
+    visited = set()
+    
+    # initializes a deque called queue with the starting node start. The queue will store nodes to be processed during BFS traversal
+    queue = deque([start])
+    
+    #marks the starting node start as visited by adding it to the visited set.
+    visited.add(start)
+    
+    # initializes an empty list called result to store the traversal result.
+    result = []
+    
+    while queue:#continues till queue is not empty
+        vertex = queue.popleft()
+        
+        # dequeues the leftmost node (front) from the queue and assigns it to the variable vertex
+        result.append(vertex)
+        
+        # iterates over each neighbor of the current node vertex that has not been visited yet
+        for neighbour in graph[vertex] - visited:
+            #makrs neighbour as visited by adding in visited
+            visited.add(neighbour)
+            
+            #append neighbour into the queue
+            queue.append(neighbour)
+    #return traversal result
+    return result
+
+def dfs(graph, start):
+    # initializes an empty set called visited to keep track of visited nodes during traversal.
+    visited = set()
+    
+    # initializes a stack with the starting node start. The stack will store nodes to be processed during DFS traversal.
+    stack = [start]
+
+    #    #initializes an empty list called result to store the traversal result.
+    result = []
+    while stack:#while loop cintinues till the stack is not empty
+        
+        #pops (removes and returns) the top node from the stack and assigns it to the variable vertex.
+        vertex = stack.pop()
+        
+        #
+        if vertex not in visited:
+            result.append(vertex)
+            visited.add(vertex)
+            
+            #extends the stack with the unvisited neighbors of the node vertex. 
+            #It calculates graph[vertex] - visited to get the set of unvisited neighbors, and then extends the stack with these unvisited neighbors
+            stack.extend(graph[vertex] - visited)
+            
+    # returns the traversal result, which is the list of nodes visited during DFS traversal.
+    return result
+
+def default():
+    print("Invalid choice")
+
+# Define the switch case dictionary
+switch_case = {
+    1: bfs,
+    2: dfs
+}
+
+# Example graph represented as adjacency list
+graph = {
+    'A': {'B', 'C'},
+    'B': {'A', 'D', 'E'},
+    'C': {'A', 'F'},
+    'D': {'B'},
+    'E': {'B', 'F'},
+    'F': {'C', 'E'}
+}
+
+# Main loop
+while True:
+    # Get user input
+    choice = int(input("Enter your choice (1 for BFS, 2 for DFS, 0 to exit): "))
+    
+    # Exit loop if user chooses 0
+    if choice == 0:
+        break
+    
+    # Execute the corresponding function based on user choice
+    traversal_result = switch_case.get(choice, default)(graph, 'A')
+    print("Traversal Result:", traversal_result)

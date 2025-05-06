@@ -1,0 +1,19 @@
+def fcfs(jobs):
+    
+    jobs.sort(key=lambda x: x[0])
+    schedule = []
+    current_time = 0
+
+    for arrival_time, burst_time in jobs:
+        start_time = max(current_time, arrival_time)
+        end_time = start_time + burst_time
+        schedule.append((start_time, end_time))
+        current_time = end_time
+
+    return schedule
+
+
+jobs = [(0, 6), (1, 8), (2, 7), (3, 3), (4, 5)]  
+job_schedule = fcfs(jobs)
+for start_time, end_time in job_schedule:
+    print(f"Start Time = {start_time}, End Time = {end_time}")

@@ -1,0 +1,73 @@
+# Define a function for iterative depth-first search traversal
+def dfs_iterative(graph, start):
+    # Initialize a set to keep track of visited vertices
+    visited = set()
+    # Initialize a stack to store vertices to visit
+    stack = [start]
+
+    # Continue traversal until the stack is empty
+    while stack:
+        # Pop a vertex from the stack
+        vertex = stack.pop()
+        # Check if the vertex has not been visited
+        if vertex not in visited:
+            # Mark the vertex as visited
+            visited.add(vertex)
+            # Print the visited vertex
+            print(vertex, end=' ')
+
+            # Push unvisited neighbors onto the stack
+            for neighbor in graph[vertex]:
+                if neighbor not in visited:
+                    stack.append(neighbor)
+
+
+# Define a function for iterative breadth-first search traversal
+def bfs_iterative(graph, start):
+    # Initialize a set to keep track of visited vertices
+    visited = set()
+    # Initialize a queue to store vertices to visit
+    queue = [start]
+
+    # Continue traversal until the queue is empty
+    while queue:
+        # Dequeue a vertex from the queue
+        vertex = queue.pop(0)
+        # Check if the vertex has not been visited
+        if vertex not in visited:
+            # Mark the vertex as visited
+            visited.add(vertex)
+            # Print the visited vertex
+            print(vertex, end=' ')
+
+            # Enqueue unvisited neighbors
+            for neighbor in graph[vertex]:
+                if neighbor not in visited:
+                    queue.append(neighbor)
+
+
+# Accepting the graph from the user
+graph = {}
+vertices = int(input("Enter the number of vertices: "))
+
+# Iterate over the number of vertices to input vertex and adjacent vertices
+for i in range(vertices):
+    # Input a vertex from the user
+    vertex = input("Enter a vertex: ")
+    # Input adjacent vertices from the user and split them
+    adjacent_vertices = input("Enter adjacent vertices (space-separated): ").split()
+    # Add vertex and its adjacent vertices to the graph
+    graph[vertex] = adjacent_vertices
+
+# Input the start vertex for traversal
+start_vertex = input("Enter the start vertex: ")
+
+# Performing iterative DFS traversal
+print("DFS Traversal:")
+dfs_iterative(graph, start_vertex)
+print()
+
+# Performing iterative BFS traversal
+print("BFS Traversal:")
+bfs_iterative(graph, start_vertex)
+print()

@@ -1,0 +1,78 @@
+# Importing PriorityQueue from the queue module
+from queue import PriorityQueue
+
+# Function for Best-First Search algorithm
+def best_first_search(graph, start, goal):
+    # Set to store visited vertices
+    visited = set()
+    # Priority queue to store vertices with their priorities
+    priority_queue = PriorityQueue()
+    # Put the start vertex with priority 0 into the priority queue
+    priority_queue.put((0, start))
+    # List to store the path
+    path = []
+
+    # Continue until the priority queue is not empty
+    while not priority_queue.empty():
+        # Get the vertex with the lowest priority from the priority queue
+        _, current_node = priority_queue.get()
+
+        # If the current vertex is the goal, add it to the path and break the loop
+        if current_node == goal:
+            path.append(current_node)
+            break
+
+        # If the current vertex is not visited
+        if current_node not in visited:
+            # Add the current vertex to the path and mark it as visited
+            path.append(current_node)
+            visited.add(current_node)
+
+            # Explore neighbors of the current vertex
+            for neighbor in graph[current_node]:
+                # If the neighbor is not visited, add it to the priority queue with its priority
+                if neighbor not in visited:
+                    priority_queue.put((graph[current_node][neighbor], neighbor))
+
+    # If the last vertex in the path is not the goal, return None (no path found)
+    if path[-1] != goal:
+        return None
+
+    # Otherwise, return the path
+    return path
+
+# Accept graph from the user
+graph = {}
+
+# Input the number of edges from the user
+num_edges = int(input("Enter the number of edges: "))
+
+# Iterate over each edge to input its details
+for i in range(num_edges):
+    print("\nFor Edge", i + 1)
+    # Input start vertex, end vertex, and edge weight from the user
+    src = input("Enter start vertex: ")
+    dest = input("Enter end vertex: ")
+    weight = int(input("Enter weight: "))
+
+    # Add vertices to the graph if they don't exist
+    if src not in graph:
+        graph[src] = {}
+    if dest not in graph:
+        graph[dest] = {}
+
+    # Add the destination vertex and its weight to the adjacency list of the source vertex
+    graph[src][dest] = weight
+
+# Input the start and goal vertices from the user
+start_vertex = input("Enter the start vertex: ")
+goal_vertex = input("Enter the goal vertex: ")
+
+# Find the path from the start to the goal using Best-First Search
+path = best_first_search(graph, start_vertex, goal_vertex)
+
+# Print the result
+if path is not None:
+    print(f"Path from {start_vertex} to {goal_vertex}: {path}")
+else:
+    print(f"There is no path from {start_vertex} to {goal_vertex} using Best-First Search.")

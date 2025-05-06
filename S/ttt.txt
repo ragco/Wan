@@ -1,0 +1,96 @@
+import heapq
+
+class TicTacToe:
+    def _init_(self, board, player):
+        self.board = board
+        self.player = player
+
+    def is_winner(self, player):
+        lines = self.board + list(zip(*self.board))
+        lines.append([self.board[i][i] for i in range(3)])
+        lines.append([self.board[i][2 - i] for i in range(3)])
+        return any(all(cell == player for cell in line) for line in lines)
+
+    def available_moves(self):
+        return [(i, j) for i in range(3) for j in range(3) if self.board[i][j] == ' ']
+
+    def next_state(self, i, j):
+        new_board = [row[:] for row in self.board]
+        new_board[i][j] = self.player
+        next_player = 'O' if self.player == 'X' else 'X'
+        return TicTacToe(new_board, next_player)
+
+    def heuristic(self):
+        opponent = 'O' if self.player == 'X' else 'X'
+        score = 0
+        lines = self.board + list(zip(*self.board)) + [[self.board[i][i] for i in range(3)]] + [[self.board[i][2 - i] for i in range(3)]]
+        for line in lines:
+            if line.count(self.player) == 2 and line.count(' ') == 1:
+                score += 10  
+            if line.count(opponent) == 2 and line.count(' ') == 1:
+                score -= 8  
+            if line.count(self.player) == 1 and line.count(' ') == 2:
+                score += 1  
+        
+        if self.board[1][1] == self.player:
+            score += 2
+        return score
+
+    def _lt_(self, other):
+        return str(self.board) < str(other.board)
+
+    def _str_(self):
+        return '\n'.join([' | '.join(row) for row in self.board])
+
+def a_star_search(game):
+    heap = []
+    heapq.heappush(heap, (0, game))
+    visited = set()
+
+    while heap:
+        _, current = heapq.heappop(heap)
+
+        board_str = str(current)
+        if board_str in visited:
+            continue
+        visited.add(board_str)
+
+        
+        last_player = 'O' if current.player == 'X' else 'X'
+        if current.is_winner(last_player):
+            print("\nWinning Move Found (by '{}'):\n".format(last_player))
+            print(current)
+            return
+
+        for i, j in current.available_moves():
+            next_game = current.next_state(i, j)
+            f_score = 1 + next_game.heuristic()
+            heapq.heappush(heap, (f_score, next_game))
+
+    print("\nNo winning move found.")
+
+def get_board_input():
+    print("Enter the board (use X, O, and - for empty):")
+    board = []
+    for _ in range(3):
+        while True:
+            row = input().upper().strip().split()
+            if len(row) == 3 and all(cell in ['X', 'O', '-'] for cell in row):
+                board.append([' ' if c == '-' else c for c in row])
+                break
+            else:
+                print("Enter exactly 3 symbols: X, O, or -")
+    return board
+
+def get_starting_player():
+    while True:
+        p = input("Enter starting player (X/O): ").strip().upper()
+        if p in ['X', 'O']:
+            return p
+        print("Invalid input. Enter X or O.")
+
+
+user_board = get_board_input()
+user_player = get_starting_player()
+game = TicTacToe(user_board, user_player)
+a_star_search(game)

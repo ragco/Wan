@@ -1,0 +1,32 @@
+# Define the graph as an adjacency list
+graph = {
+    '5': ['3', '7'],  # Node 5 is connected to nodes 3 and 7
+    '3': ['2', '4'],  # Node 3 is connected to nodes 2 and 4
+    '7': ['8'],       # Node 7 is connected to node 8
+    '2': [],          # Node 2 has no outgoing edges
+    '4': ['8'],       # Node 4 is connected to node 8
+    '8': []           # Node 8 has no outgoing edges
+}
+
+visited = []  # List to track visited nodes during traversal
+queue = []    # Initialize an empty queue for BFS
+
+# Define the Breadth-First Search function
+def bfs(visited, graph, node):
+    visited.append(node)  # Mark the starting node as visited
+    queue.append(node)    # Enqueue the starting node
+
+    while queue:  # Loop until the queue is empty
+        m = queue.pop(0)  # Dequeue the front node from the queue
+        print(m, end=" ")  # Print the dequeued node
+
+        # Iterate over the neighbors of the dequeued node
+        for neighbour in graph[m]:
+            # Check if the neighbour has not been visited yet
+            if neighbour not in visited:
+                visited.append(neighbour)  # Mark the neighbour as visited
+                queue.append(neighbour)    # Enqueue the neighbour for further exploration
+
+# Driver code to demonstrate BFS traversal
+print("Following is the Breadth-First Search:")
+bfs(visited, graph, '5')  # Call the BFS function starting from node '5'

@@ -1,0 +1,73 @@
+# Number of vertices in the graph
+N = 5
+# Creating graph by adjacency matrix method
+G = [[0, 19, 5, 0, 0],
+     [19, 0, 5, 9, 2],
+     [5, 5, 0, 1, 6],
+     [0, 9, 1, 0, 1],
+     [0, 2, 6, 1, 0]]
+
+# Function to find the parent of a vertex using path compression
+def find_parent(parent, i):#path compression is a technique used to optimize the process of finding the parent of a vertex within a disjoint-set forest 
+    if parent[i] == i:
+        return i
+    return find_parent(parent, parent[i])
+
+# Function to merge two sets represented by their parent vertices
+def union(parent, rank, x, y):
+    x_root = find_parent(parent, x)
+    y_root = find_parent(parent, y)
+
+    if rank[x_root] < rank[y_root]:
+        parent[x_root] = y_root
+    elif rank[x_root] > rank[y_root]:
+        parent[y_root] = x_root
+    else:
+        parent[y_root] = x_root
+        rank[x_root] += 1
+
+# Kruskal's algorithm to find minimum spanning tree
+def kruskal(G):
+    edges = []
+    N = len(G)
+    # Extracting all edges from the graph
+    for i in range(N):
+        for j in range(i + 1, N):
+            if G[i][j] != 0:
+                edges.append((i, j, G[i][j]))
+    # Sorting all edges based on their weight
+    edges.sort(key=lambda x: x[2])
+
+    parent = [i for i in range(N)]  # Array to store parent of each vertex
+    rank = [0] * N  # Array to store rank of each vertex
+
+    mst_edges = []  # List to store edges of the minimum spanning tree
+
+    for edge in edges:
+        u, v, weight = edge
+        if find_parent(parent, u) != find_parent(parent, v):
+            mst_edges.append(edge)
+            union(parent, rank, u, v)
+
+    return mst_edges
+
+# Finding minimum spanning tree
+mst_edges = kruskal(G)
+
+# Printing the minimum spanning tree edges
+print("Edge : Weight\n")
+for edge in mst_edges:
+    u, v, weight = edge
+    print(f"{u}-{v}:{weight}")
+
+
+
+#Kruskal(G):
+#1. Sort all the edges of the graph G in non-decreasing order of their weights.
+#2. Initialize an empty set to store the MST.
+#3. Initialize a disjoint set data structure to keep track of connected components.
+#4. For each edge (u, v) in the sorted order:
+#     a. If adding edge (u, v) does not form a cycle in the MST:
+#          i. Add edge (u, v) to the MST.
+#         ii. Union the sets containing vertices u and v.
+#5. Return the set of edges in the MST.

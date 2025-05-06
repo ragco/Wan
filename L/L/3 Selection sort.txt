@@ -1,0 +1,20 @@
+# Define a function for selection sort
+def selection_sort(arr):
+    n = len(arr)  # Get the length of the array
+    for i in range(n):
+        # Find the minimum element in the remaining unsorted array
+        min_idx = i  # Assume the current element is the minimum
+        for j in range(i + 1, n):  # Iterate over the unsorted portion of the array
+            if arr[j] < arr[min_idx]:  # If we find a smaller element
+                min_idx = j  # Update the index of the minimum element
+        
+        # Swap the found minimum element with the first element
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]  # Swap elements at positions i and min_idx
+    return arr  # Return the sorted array
+
+# Take array input from the user
+arr = input("Enter the elements of the array separated by space: ").split()  # Input array elements as strings
+arr = [int(x) for x in arr]  # Convert input strings to integers
+
+sorted_arr = selection_sort(arr)  # Call selection_sort function to sort the array
+print("Sorted array is:", sorted_arr)  # Print the sorted array

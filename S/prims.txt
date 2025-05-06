@@ -1,0 +1,58 @@
+import heapq
+
+def prim(graph, start_vertex):
+    num_vertices = len(graph)               
+    mst = []                                
+    visited = [False] * num_vertices        
+    min_heap = [(0, start_vertex)]          
+
+    
+    while min_heap:
+        weight, vertex = heapq.heappop(min_heap)
+        if visited[vertex]:                 
+            continue
+        
+        visited[vertex] = True              
+        mst.append((weight, vertex))         
+        
+        for neighbor, edge_weight in graph[vertex]:         
+            if not visited[neighbor]:
+                heapq.heappush(min_heap, (edge_weight, neighbor))
+    
+    return mst[1:]                          
+
+
+def get_input():
+    
+    num_vertices = int(input("Enter the number of vertices: "))
+    graph = {i: [] for i in range(num_vertices)}
+    
+    num_edges = int(input("Enter the number of edges: "))
+    
+   
+    print("Enter each edge in the format: vertex1 vertex2 weight")
+    for _ in range(num_edges):
+        u, v, weight = map(int, input().split())
+        graph[u].append((v, weight))
+        graph[v].append((u, weight))  
+    
+    return graph
+
+def main():
+    
+    graph = get_input()
+
+    start_vertex = int(input("Enter the starting vertex for Prim's algorithm: "))
+    
+    mst = prim(graph, start_vertex)
+
+    print("\nEdges in MST:")
+    total_weight = 0
+    for weight, vertex in mst:
+        print(f"Edge to vertex {vertex} with weight {weight}")
+        total_weight += weight
+    
+    print(f"Total weight of MST: {total_weight}")
+
+if __name__ == "__main__":
+    main()

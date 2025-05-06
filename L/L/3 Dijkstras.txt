@@ -1,0 +1,83 @@
+import heapq
+# Importing the heapq module, which provides heap-based priority queue implementation.
+
+def dijkstra(graph, start):
+    # Defining a function named dijkstra which takes a graph and a starting vertex as input.
+    
+    distances = {vertex: float('inf') for vertex in graph}
+    # Initializing a dictionary to store the shortest distances from the start vertex to all other vertices. 
+    # Initially, all distances are set to infinity.
+    
+    distances[start] = 0
+    # The distance from the start vertex to itself is set to 0.
+
+    pq = [(0, start)]
+    # Creating a priority queue (heap) to store vertices and their corresponding distances.
+    # Initially, it contains a tuple with distance 0 and the start vertex.
+    
+    while pq:
+        # Starting a while loop that continues until the priority queue is not empty.
+        
+        dist_u, u = heapq.heappop(pq)
+        # Extracting the vertex with the smallest distance from the priority queue.
+        # 'heappop' removes and returns the smallest element from the heap.
+        # 'dist_u' is the distance to vertex 'u'.
+        
+        if dist_u > distances[u]:
+            continue
+        # If the extracted distance is greater than the known shortest distance to 'u', skip this iteration.
+        # This is an optimization to avoid unnecessary processing.
+
+        for v, weight in graph[u].items():
+            # Iterating over the neighbors of vertex 'u' along with the weights of the edges.
+            
+            dist_v = distances[u] + weight
+            # Calculating the tentative distance to 'v' through 'u'.
+            
+            if dist_v < distances[v]:
+                # If the calculated distance is less than the current known shortest distance to 'v'.
+                
+                distances[v] = dist_v
+                # Update the shortest distance to 'v' with the newly calculated distance.
+                
+                heapq.heappush(pq, (dist_v, v))
+                # Push the updated distance and vertex 'v' to the priority queue.
+                # 'heappush' adds the element to the heap and maintains the heap property.
+    
+    return distances
+    # Return the dictionary containing the shortest distances from the start vertex to all other vertices.
+
+# Example usage:
+graph = {
+    'A': {'B': 5, 'C': 3},
+    'B': {'A': 5, 'C': 2, 'D': 1},
+    'C': {'A': 3, 'B': 2, 'D': 6},
+    'D': {'B': 1, 'C': 6}
+}
+# Defining an example graph represented as a dictionary of dictionaries.
+
+start_vertex = 'A'
+# Defining the start vertex for Dijkstra's algorithm.
+
+shortest_distances = dijkstra(graph, start_vertex)
+# Calling the dijkstra function with the graph and start vertex to compute the shortest distances.
+
+print("Shortest distances from vertex", start_vertex, ":", shortest_distances)
+# Printing the shortest distances from the start vertex to all other vertices.
+
+
+
+#Dijkstra(G, source):
+#1. Initialize an empty set to store vertices whose shortest distance from the source has been finalized.
+#2. Initialize an array to store the shortest distance from the source to each vertex. Initialize all distances to infinity except the distance to the source, which is set to 0.
+#3. Initialize a priority queue (minHeap) to store vertices based on their tentative shortest distance from the source.
+#4. Insert the source vertex into the priority queue with a priority of 0.
+#5. While the priority queue is not empty:
+     #a. Extract the vertex u with the minimum tentative distance from the priority queue.
+    # b. Add u to the set of finalized vertices.
+   #  c. For each neighbor v of u:
+  #         i. If v is not finalized and the distance to v through u is shorter than the current known shortest distance to v:
+ #                 - Update the shortest distance to v.
+#                  - Insert v into the priority queue with the updated shortest distance as the priority.
+#6. Return the array of shortest distances.
+
