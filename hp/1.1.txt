@@ -1,107 +1,153 @@
 #include <iostream>
-#include <vector>
-#include <queue>
-#include <stack>
-#include <omp.h>
+#include<vector>
+#include<queue>
+#include<omp.h>
+
 
 using namespace std;
 
-class Graph {
-    int V;
-    vector<vector<int>> adjList;
+int vertices;//store number of nodes
+vector<vector<int>> adjList;//adjlist=store graph connections
 
-public:
-    Graph(int V) {
-        this->V = V;
-        adjList.resize(V);
-    }
-
-    void addEdge(int src, int dest) {
-        adjList[src].push_back(dest);
-        adjList[dest].push_back(src); // For undirected graph
-    }
-
-    vector<int> getNeighbors(int vertex) {
-        return adjList[vertex];
-    }
-};
-
-void parallelBFS(Graph& graph, int source, vector<bool>& visited) {
-    queue<int> q;
-    q.push(source);
-    visited[source] = true;
-
-    while (!q.empty()) {
-        int current = q.front();
-        q.pop();
-        cout << "Visited: " << current << endl;
-
-        vector<int> neighbors = graph.getNeighbors(current);
-        #pragma omp parallel for
-        for (int i = 0; i < neighbors.size(); ++i) {
-            int neighbor = neighbors[i];
-            if (!visited[neighbor]) {
-                visited[neighbor] = true;
-                q.push(neighbor);
-            }
-        }
-    }
+void addEdge(int u,int v){//adds an edge between 2 nodes
+	adjList[u].push_back(v);
+	adjList[v].push_back(u);
 }
 
-void parallelDFS(Graph& graph, int source, vector<bool>& visited) {
-    stack<int> s;
-    s.push(source);
-    visited[source] = true;
+void parallelBFS(int start){//start=starting node
+	vector<bool> visited(vertices,false);//keeps track of visited nodes ,initially no node visited
 
-    while (!s.empty()) {
-        int current = s.top();
-        s.pop();
-        cout << "Visited: " << current << endl;
+	queue<int> q;//queue works with fifo
+	visited[start] = true;//mark start node as visited and add to queue
+	q.push(start);//node is pushed into queue
 
-        vector<int> neighbors = graph.getNeighbors(current);
-        #pragma omp parallel for
-        for (int i = 0; i < neighbors.size(); ++i) {
-            int neighbor = neighbors[i];
-            if (!visited[neighbor]) {
-                visited[neighbor] = true;
-                s.push(neighbor);
-            }
-        }
-    }
+
+	cout<<"BFS: ";
+
+	while(!q.empty()){//Run untill queue becomes empty
+
+		int levelsize = q.size();//stores how many nodes are in current level
+		vector<int> currentLevel;//stores nodes of current bfs level
+
+		for(int i = 0;i<levelsize;i++){//loop runs for all nodes of current levelx
+			currentLevel.push_back(q.front());//<-
+			q.pop();
+		}
+
+
+		//prtocess current level nodes in parallel
+		//each thread handles one node from this level
+
+		#pragma omp parallel for//run for loop in parallel using multiple threads
+		for(int i = 0;i<(int)currentLevel.size();i++){//processes all nodes of current bfs level
+			int node = currentLevel[i];//stroes current node
+
+			//only one thread prints at a time
+			#pragma omp critical//many threads may try to print together so tae 1 thread and print
+			cout<<node<< " ";
+
+			//check neighbours
+			for(int neighbor : adjList[node]){
+				#pragma omp critical//this protects shared data
+				{
+
+				if(!visited[neighbor]){
+					visited[neighbor]= true;
+					q.push(neighbor);
+
+				}
+				}
+			}
+
+		}
+	}
+
+	cout<<endl;
+
+
+}
+void parallelDFS(int start){
+	vector<bool> visited(vertices,false);
+
+	// dfs uses a stack instead of queues
+	vector<int> stk;
+	stk.push_back(start);//push starting node
+
+	cout<<"DFS: ";
+
+	while(!stk.empty()){//loop continues until stack becomes empty
+		// take the top element
+		int node = stk.back();//stk.back returns the last element of stack
+		stk.pop_back();//removes last element
+
+		//process only if not visited
+		if(!visited[node]){//if node is not visited then process it
+			visited[node] = true;//marks node as visited
+
+
+			#pragma omp critical
+			cout<<node<<" ";
+
+			// push all unvisited neighbors in parallel
+			#pragma omp parallel for
+			for(int i = 0;i<(int)adjList[node].size();i++){ //this checks all neighbours of current node
+
+				int neighbor = adjList[node][i];//gets current node
+				#pragma omp critical
+				{
+					if(!visited[neighbor]){
+						stk.push_back(neighbor);//add neighbor into dfs stack
+					}
+				}
+			}
+		}
+	}
+	cout<<endl;
 }
 
-int main() {
-    int V, E;
-    cout << "Enter the number of vertices: ";
-    cin >> V;
-    Graph graph(V);
-    cout << "Enter the number of edges: ";
-    cin >> E;
-    cout << "Enter the edges (src dest):" << endl;
-    for (int i = 0; i < E; ++i) {
-        int src, dest;
-        cin >> src >> dest;
-        graph.addEdge(src, dest);
-    }
+int main(){
 
-    vector<bool> visited(V, false);
+	int edges;
 
-    cout << "Parallel BFS:" << endl;
-    #pragma omp parallel num_threads(2)
-    {
-        #pragma omp single nowait
-        parallelBFS(graph, 0, visited);
-    }
+	cout<< "Enter number of vertices:";
+	cin>> vertices;
+	adjList.resize(vertices); //for making the adjacency list fready
 
-    // Reset visited array for DFS
-    fill(visited.begin(), visited.end(), false);
 
-    cout << "Parallel DFS:" << endl;
-    #pragma omp parallel num_threads(2)
-    {
-        #pragma omp single nowait
-        parallelDFS(graph, 0, visited);
-    }
+	cout<< "Enter number of edges:";
+	cin>>edges;
 
-    return 0;
+
+	cout<< "Enter the numbetr of edges as u v\n";
+
+
+	for(int i = 0;i<edges;i++){
+		int u,v;
+		cin>>u>>v;
+		addEdge(u,v);
+	}
+
+	int start;
+	cout<<"Enter the starting node:";
+	cin>>start;
+
+
+	//measure the BFS time
+	double t1 = omp_get_wtime();//start time before bfs
+	parallelBFS(start);//executes bfs
+	double t2 = omp_get_wtime();//stops time after bfs finishes
+	cout<<"BFS Time:"<<(t2-t1)<<"sec\n\n";//calculate total bfs time
+
+
+	//measure the DFS time
+	double t3 = omp_get_wtime();
+	parallelDFS(start);
+	double t4 = omp_get_wtime();
+	cout<< "DFS time:"<<(t4-t3) << "sec\n";
+
+	return 0;
+
+
+
+
 }
