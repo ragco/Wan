@@ -1,0 +1,103 @@
+--1
+import pandas as pd
+import numpy as np
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.utils import to_categorical
+
+--2
+# Load dataset
+df = pd.read_csv("letter-recognition.csv")
+
+# Show first 5 rows
+print(df.head())
+
+--3
+# Input features (only numeric columns)
+X = df.iloc[:, 1:].values
+
+# Output labels (letters)
+y = df.iloc[:, 0].values
+
+--4
+encoder = LabelEncoder()
+
+y = encoder.fit_transform(y)
+
+print(y[:10])
+
+--5
+y = to_categorical(y)
+
+print(y[:5])
+
+--6 
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X = scaler.fit_transform(X)
+
+--7
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+--8
+model = Sequential()
+
+# Input + Hidden Layer 1
+model.add(Dense(128,
+                activation='relu',
+                input_shape=(16,)))
+
+# Hidden Layer 2
+model.add(Dense(64,
+                activation='relu'))
+
+# Output Layer
+model.add(Dense(26,
+                activation='softmax'))
+
+--9
+model.compile(
+    optimizer='adam',
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+--10
+history = model.fit(
+    X_train,
+    y_train,
+    epochs=20,
+    batch_size=32,
+    validation_split=0.2
+)
+
+-11
+loss, accuracy = model.evaluate(X_test, y_test)
+
+print("Accuracy:", accuracy)
+
+--12
+predictions = model.predict(X_test)
+
+# Convert probabilities to class index
+predicted_labels = np.argmax(predictions, axis=1)
+
+print(predicted_labels[:10])
+
+--13
+letters = encoder.inverse_transform(predicted_labels)
+
+print(letters[:10])
+
