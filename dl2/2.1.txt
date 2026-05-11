@@ -1,102 +1,121 @@
-#Step 1: Import Libraries
-import numpy as np
+!pip install tensorflow
+
+--2
 import pandas as pd
-import matplotlib.pyplot as plt
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-#Step 2: Load Dataset
-# Load dataset
-df = pd.read_csv("1_boston_housing.csv")
-
-# Remove quotes from column names (important for your dataset)
-df.columns = df.columns.str.replace('"', '')
+# Load dataset from CSV file
+df = pd.read_csv('BostonHousing.csv')
 
 # Display first 5 rows
-df.head()
+print(df.head())
 
+--3
+print(df.isnull().sum())
 
-#Step 3: Split Features and Target
-X = df.drop("MEDV", axis=1)   # Features
-y = df["MEDV"]                # Target
+--4
+df['rm'] = df['rm'].fillna(df['rm'].mean())
 
-print(X.shape, y.shape)
+--5
+print(df.isnull().sum())
 
-#Step 4: Train-Test Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+--6
+from sklearn.preprocessing import StandardScaler
 
-#Step 5: Feature Scaling
+# Split data into input and output variables
+X = df.drop('medv', axis=1)
+y = df['medv']
+
+# Feature Scaling
 scaler = StandardScaler()
 
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+X = scaler.fit_transform(X)
+
+# Display first 5 rows of scaled data
+print(X[:5])
+
+--7
+from sklearn.model_selection import train_test_split
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.3,
+    random_state=42
+)
+
+# Print shapes
+print("Training set shape:", X_train.shape, y_train.shape)
+print("Testing set shape:", X_test.shape, y_test.shape)
+
+--8
+from tensorflow.keras.models import Sequential 
+from tensorflow.keras.layers import Dense, Dropout
+
+
+# Define model
 model = Sequential()
-model.add(Dense(1, input_shape=(X_train.shape[1],), activation='linear'))
 
+# Input + Hidden Layer
+model.add(Dense(64, input_dim=13, activation='relu'))
+
+# Dropout Layer
+model.add(Dropout(0.2))
+
+# Hidden Layer
+model.add(Dense(32, activation='relu'))
+
+# Output Layer
+model.add(Dense(1))
+
+# Display model summary
+print(model.summary())
+
+--9
+# Compile model
 model.compile(
+    loss='mean_squared_error',
     optimizer='adam',
-    loss='mse',
-    metrics=['mae']
+    metrics=['mean_absolute_error']
 )
 
+--10
+from keras.callbacks import EarlyStopping
+
+# Early stopping
+early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=5
+)
+
+# Train model
 history = model.fit(
-    X_train, y_train,
-    epochs=100,
-    validation_split=0.05,
-    verbose=1
-)
-
-
-#Step 6: Build Deep Neural Network
-model = Sequential()
-
-# Single neuron → behaves like linear regression
-model.add(Dense(1, input_shape=(X_train.shape[1],), activation='linear'))
-
-model.compile(
-    optimizer='adam',
-    loss='mse',
-    metrics=['mae']
-)
-
-model.summary()
-
-
-
-#Step 7: Train Model
-history = model.fit(
-    X_train, y_train,
-    epochs=100,
-    batch_size=16,
+    X_train,
+    y_train,
     validation_split=0.2,
-    verbose=1
+    epochs=100,
+    batch_size=32,
+    callbacks=[early_stopping]
 )
 
-#Step 8: Evaluate Model
+--11
+import matplotlib.pyplot as plt
+
+# Plot loss graph
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+
+plt.title('Model Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+
+plt.legend(['Training', 'Validation'])
+
+plt.show()
+
+--12
+# Evaluate model
 loss, mae = model.evaluate(X_test, y_test)
 
-print("Test Loss (MSE):", loss)
-print("Test MAE:", mae)
-
-#Step 9: Predictions
-y_pred = model.predict(X_test)
-
-# Compare actual vs predicted
-for i in range(5):
-    print(f"Actual: {y_test.iloc[i]:.2f} | Predicted: {y_pred[i][0]:.2f}")
-
-
-#Step 10: Plot Training Graphs
-plt.plot(history.history['loss'], label='Training Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.legend()
-plt.title("Loss Graph")
-plt.xlabel("Epochs")
-plt.ylabel("Loss")
-plt.show()
+# Print Mean Absolute Error
+print("Mean Absolute Error:", mae)
