@@ -1,64 +1,107 @@
-#include <iostream>
-#include <vector>
-#include <omp.h>
-#include <climits>
+
+
+#include<iostream>
+#include<climits> //Used for integer limits.
+#include<vector>  //Used for dynamic arrays.
+#include<omp.h>   // openmp functions omp_get_thread_num
 
 using namespace std;
 
-void min_reduction(vector<int>& arr) {
-  int min_value = INT_MAX;
-  #pragma omp parallel for reduction(min: min_value)
-  for (int i = 0; i < arr.size(); i++) {
-    if (arr[i] < min_value) {
-      min_value = arr[i];
-    }
-  }
-  cout << "Minimum value: " << min_value << endl;
+int parallelMin(vector<int>&arr){//Vector storing integers,without&Entire vector gets copied extra memory is used
+	int n = arr.size();  //arr.size() gives number of elements.
+	int minVal = INT_MAX; //INT_MAX means largest possible integer.
+
+	#pragma omp parallel for reduction(min:minVal) //without reduction cayses race condition so opnmp creates separate minval for each thread and combines after loop
+	for(int i = 0; i< n ; i++){
+		if(arr[i]<minVal){ //if current element is smaller than current mini
+			minVal= arr[i]; // update mini
+		}
+	}
+	return minVal; //returns min val
 }
 
-void max_reduction(vector<int>& arr) {
-  int max_value = INT_MIN;
-  #pragma omp parallel for reduction(max: max_value)
-  for (int i = 0; i < arr.size(); i++) {
-    if (arr[i] > max_value) {
-      max_value = arr[i];
-    }
-  }
-  cout << "Maximum value: " << max_value << endl;
+int parallelMax(vector<int>&arr){ // same for max
+	int n = arr.size();
+	int maxVal = INT_MIN;
+
+	#pragma omp parallel for reduction(max:maxVal)
+
+	for(int i = 0; i < n ; i++){
+		if(arr[i] > maxVal){
+			maxVal = arr[i];
+		}
+	}
+	return maxVal;
 }
 
-void sum_reduction(vector<int>& arr) {
-  int sum = 0;
-   #pragma omp parallel for reduction(+: sum)
-   for (int i = 0; i < arr.size(); i++) {
-    sum += arr[i];
-  }
-  cout << "Sum: " << sum << endl;
+int parallelSum(vector<int>&arr){ //
+
+	int n = arr.size();
+	int sum = 0;
+
+	#pragma omp parallel for reduction (+:sum) // without reduction it causes race conditionso with this each thread gets its own private sum
+	for(int i = 0;i<n;i++){  // adds current element to sum
+		sum+=arr[i];
+
+	}
+	return sum;
 }
 
-void average_reduction(vector<int>& arr) {
-  int sum = 0;
-  #pragma omp parallel for reduction(+: sum)
-  for (int i = 0; i < arr.size(); i++) {
-    sum += arr[i];
-  }
-  cout << "Average: " << (double)sum / arr.size() << endl;
+
+
+double parallelAverage(vector<int>&arr){ //double function returns decimal value //integer vector passed by reference
+
+	long long sum = parallelSum(arr); // calculates sum lon = sum may become very large
+	return (double)sum / arr.size();
 }
 
-int main() {
-  vector<int> arr;
-  arr.push_back(5);
-  arr.push_back(2);
-  arr.push_back(9);
-  arr.push_back(1);
-  arr.push_back(7);
-  arr.push_back(6);
-  arr.push_back(8);
-  arr.push_back(3);
-  arr.push_back(4);
+int main(){
 
-  min_reduction(arr);
-  max_reduction(arr);
-  sum_reduction(arr);
-  average_reduction(arr);
+	int n;
+	cout<< "Enter number of elements: ";
+	cin>> n;
+
+
+	vector<int> arr(n); // creates vector of size n
+	cout<< "Enter "<< n << " elements: ";
+	for(int i = 0;i< n; i++){  //store user input in vectoor
+		cin>> arr[i];
+
+	}
+
+	// for min
+	double t1 = omp_get_wtime(); //starts timer
+	int minVal = parallelMin(arr); //calls parallel minimum function
+	double t2 = omp_get_wtime(); //stops timer
+	cout<< "\nmin value :"<< minVal;
+	cout<< "\nTime :" <<(t2-t1)<<" sec\n";
+
+
+	//for max
+	double t3 = omp_get_wtime();
+	int maxVal = parallelMax(arr);
+	double t4 = omp_get_wtime();
+	cout<< "\nMax value:"<< maxVal;
+	cout<< "\nExecution time:" <<(t4-t3)<<" sec\n";
+
+
+	//for sum
+	double t5 = omp_get_wtime();
+	int sum = parallelSum(arr);
+	double t6 = omp_get_wtime();
+	cout<<"\nsum of elements:"<<sum;
+	cout<<"\nexecution time:"<<(t6-t5)<< "sec\n";
+
+	//for average
+	double t7 = omp_get_wtime();
+	int average = parallelAverage(arr);
+	double t8 = omp_get_wtime();
+	cout<<"\nAverage:"<<average;
+	cout<<"\nExecution Time:"<<(t8-t7) << " sec\n";
+
+
+	return 0;
+
+
+
 }
