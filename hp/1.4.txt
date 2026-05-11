@@ -1,35 +1,58 @@
-%%writefile vector_add.cu
-#include <stdio.h>
+!nvcc --version
 
-__global__ void add(int *a, int *b, int *c) {
-    int id = threadIdx.x;
-    c[id] = a[id] + b[id];
+%%writefile vector_input.cu
+#include <stdio.h>  //standard input output library
+
+__global__ void vectorAdd(int *A, int *B, int *C, int n) {  //cuda keyword
+    int i = blockIdx.x * blockDim.x + threadIdx.x; //global thread ID 
+    if (i < n) {
+        C[i] = A[i] + B[i];
+    }
 }
 
 int main() {
-    int a[5] = {1,2,3,4,5};
-    int b[5] = {5,4,3,2,1};
-    int c[5];
+    int N; //stores vector size
+    printf("Enter size of vector: "); 
+    scanf("%d", &N);
 
-    int *d_a, *d_b, *d_c;
+    int A[N], B[N], C[N]; //3 arrayys created in ram (cpu memory)
+    int *d_A, *d_B, *d_C;  // d_ means device(GPU memory)these pointers will store address of A,B,C in GPU memory
+    int size = N * sizeof(int);
 
-    cudaMalloc(&d_a, 5*sizeof(int));
-    cudaMalloc(&d_b, 5*sizeof(int));
-    cudaMalloc(&d_c, 5*sizeof(int));
+    printf("Enter elements of A:\n");
+    for(int i = 0; i < N; i++) scanf("%d", &A[i]);
 
-    cudaMemcpy(d_a, a, 5*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b, b, 5*sizeof(int), cudaMemcpyHostToDevice);
+    printf("Enter elements of B:\n");
+    for(int i = 0; i < N; i++) scanf("%d", &B[i]);
 
-    add<<<1,5>>>(d_a, d_b, d_c);
+    cudaMalloc((void**)&d_A, size); //allocates memory inside gpu
+    cudaMalloc((void**)&d_B, size);
+    cudaMalloc((void**)&d_C, size);
 
-    cudaMemcpy(c, d_c, 5*sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice); // copies arrays from cpu to gpu
+    cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
 
-    for(int i=0;i<5;i++)
-        printf("%d ", c[i]);
+    vectorAdd<<<1, N>>>(d_A, d_B, d_C, N);  //kernel launch syntax(blocks,threads)
+    cudaDeviceSynchronize();  //cpu waits until gpu finishes execution
+
+    cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);  //copies result back to cpu
+
+    printf("Result:\n");
+    for(int i = 0; i < N; i++) {
+        printf("%d ", C[i]);
+    }
+
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_C);
 
     return 0;
 }
 
+
+!nvcc vector_input.cu -o vector_input
+
+!./vector_input
 
 
 
@@ -44,52 +67,74 @@ int main() {
 
 
 
+!nvcc --version
 
-
-%%writefile matrix_mul.cu
+%%writefile matrix_input.cu
 #include <stdio.h>
 
-__global__ void mul(int *A, int *B, int *C) {
-    int row = threadIdx.y;
+#define MAX 10  // max matrix sixe = 10*`10
+
+__global__ void matrixMul(int *A, int *B, int *C, int n) {  //a 1st matrix, B 2nd matrix , C result matrix , n matrix size
+    int row = threadIdx.y;  // every thread has row number and column number
     int col = threadIdx.x;
-    int sum = 0;
 
-    for(int k=0;k<2;k++)
-        sum += A[row*2+k]*B[k*2+col];
-
-    C[row*2+col] = sum;
+    int sum = 0;  //stores ans temporarily
+    for(int k = 0; k < n; k++) {  // loop for matrix multiplication
+        sum += A[row*n + k] * B[k*n + col];  // does marix multiplication
+    }
+    C[row*n + col] = sum;
 }
 
 int main() {
-    int A[4] = {1,2,3,4};
-    int B[4] = {5,6,7,8};
-    int C[4];
+    int n;
+    printf("Enter size of matrix: ");
+    scanf("%d", &n);
 
-    int *d_A,*d_B,*d_C;
+    int A[MAX][MAX], B[MAX][MAX], C[MAX][MAX];  //matrices stored in cpu ram
+    int *d_A, *d_B, *d_C;  // pointers for gpu memory
 
-    cudaMalloc(&d_A,4*sizeof(int));
-    cudaMalloc(&d_B,4*sizeof(int));
-    cudaMalloc(&d_C,4*sizeof(int));
+    printf("Enter Matrix A:\n");
+    for(int i=0;i<n;i++)
+        for(int j=0;j<n;j++)
+            scanf("%d",&A[i][j]);  // reads matrix elemnts of A
 
-    cudaMemcpy(d_A,A,4*sizeof(int),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B,B,4*sizeof(int),cudaMemcpyHostToDevice);
+    printf("Enter Matrix B:\n");
+    for(int i=0;i<n;i++)
+        for(int j=0;j<n;j++)
+            scanf("%d",&B[i][j]);  // reads matrix elemnets of B 
 
-    dim3 threads(2,2);
-    mul<<<1,threads>>>(d_A,d_B,d_C);
+    int size = n*n*sizeof(int);  // calculate memory size
 
-    cudaMemcpy(C,d_C,4*sizeof(int),cudaMemcpyDeviceToHost);
+    cudaMalloc((void**)&d_A, size);  // allocates gpu memory
+    cudaMalloc((void**)&d_B, size);
+    cudaMalloc((void**)&d_C, size);
 
-    for(int i=0;i<4;i++)
-        printf("%d ",C[i]);
+    cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);  //copy cpu to gpu
+    cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+    dim3 threads(n,n);  //creates 2D thread block
+    matrixMul<<<1,threads>>>(d_A,d_B,d_C,n);  // kernel launch(blocks,threads)
+    cudaDeviceSynchronize();  //cpu waits for gpu completion
+
+    cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);  //copy gpu to cpu
+
+    printf("Result Matrix:\n");
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            printf("%d ",C[i][j]);
+        }
+        printf("\n");
+    }
+
+    cudaFree(d_A);  //releases gpu memory
+    cudaFree(d_B);
+    cudaFree(d_C);
 
     return 0;
 }
 
+!nvcc matrix_input.cu -o matrix_input
 
-
-Compile & run:
-!nvcc matrix_mul.cu -o matrix_mul
-!./matrix_mul
-
+!./matrix_input
 
 
